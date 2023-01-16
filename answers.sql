@@ -84,5 +84,37 @@ the guest user's ID is always 0. Include in your output the name of the
 facility, the name of the member formatted as a single column, and the cost.
 Order by descending cost, and do not use any subqueries. */
 
+SELECT f.name, CONCAT(m.firstname, ' ', m.surname) AS member_name,
+	(CASE WHEN b.memid = 0 THEN (b.slots * f.guestcost)
+     ELSE f.membercost END) AS booking_cost
+FROM Bookings AS b
+INNER JOIN Facilities AS f
+	ON b.facid = f.facid
+INNER JOIN Members AS m
+	ON b.memid = m.memid
+WHERE b.starttime LIKE '2012-09-14%'
+GROUP BY b.bookid, b.memid, b.slots, f.name, m.firstname, m.surname, f.membercost, f.guestcost
+HAVING (CASE WHEN b.memid = 0 THEN (b.slots * f.guestcost)
+     ELSE f.membercost END) > 30.0
+ORDER BY booking_cost DESC;
 
 /* Q9: This time, produce the same result as in Q8, but using a subquery. */
+
+SELECT f.name, CONCAT(m.firstname, ' ', m.surname) AS member_name, subquery.booking_cost
+FROM Bookings AS b
+INNER JOIN Facilities AS f
+	ON b.facid = f.facid
+INNER JOIN Members AS m
+	ON b.memid = m.memid
+INNER JOIN (SELECT b.bookid, (CASE WHEN b.memid = 0 THEN (b.slots * f.guestcost)
+     				ELSE f.membercost END) AS booking_cost
+     		FROM Bookings AS b
+			INNER JOIN Facilities AS f
+				ON b.facid = f.facid
+			INNER JOIN Members AS m
+				ON b.memid = m.memid
+            WHERE b.starttime LIKE '2012-09-14%'
+			) AS subquery
+            	ON b.bookid = subquery.bookid
+WHERE subquery.booking_cost > 30.0
+ORDER BY booking_cost DESC;
