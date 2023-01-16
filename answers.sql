@@ -86,7 +86,7 @@ Order by descending cost, and do not use any subqueries. */
 
 SELECT f.name, CONCAT(m.firstname, ' ', m.surname) AS member_name,
 	(CASE WHEN b.memid = 0 THEN (b.slots * f.guestcost)
-     ELSE f.membercost END) AS booking_cost
+     ELSE (b.slots * f.membercost) END) AS booking_cost
 FROM Bookings AS b
 INNER JOIN Facilities AS f
 	ON b.facid = f.facid
@@ -95,7 +95,7 @@ INNER JOIN Members AS m
 WHERE b.starttime LIKE '2012-09-14%'
 GROUP BY b.bookid, b.memid, b.slots, f.name, m.firstname, m.surname, f.membercost, f.guestcost
 HAVING (CASE WHEN b.memid = 0 THEN (b.slots * f.guestcost)
-     ELSE f.membercost END) > 30.0
+     ELSE (b.slots * f.membercost) END) > 30.0
 ORDER BY booking_cost DESC;
 
 /* Q9: This time, produce the same result as in Q8, but using a subquery. */
@@ -107,7 +107,7 @@ INNER JOIN Facilities AS f
 INNER JOIN Members AS m
 	ON b.memid = m.memid
 INNER JOIN (SELECT b.bookid, (CASE WHEN b.memid = 0 THEN (b.slots * f.guestcost)
-     				ELSE f.membercost END) AS booking_cost
+     				ELSE (b.slots * f.membercost) END) AS booking_cost
      		FROM Bookings AS b
 			INNER JOIN Facilities AS f
 				ON b.facid = f.facid
